@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Shorts Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#0f0f0f;color:#e8e8e8;min-height:100vh;display:flex;justify-content:center;padding:2rem 1rem}
+.wrap{width:100%;max-width:620px}
+.header{margin-bottom:2rem;padding-top:1rem}
+.header h1{font-size:24px;font-weight:600;color:#fff}
+.header p{font-size:14px;color:#666;margin-top:6px}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1.25rem}
+.field{margin-bottom:1.1rem}
+.field:last-child{margin-bottom:0}
+.field label{font-size:14px;color:#ccc;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.field label .hint{font-size:12px;color:#555;font-weight:400}
+input[type=url],input[type=password],input[type=text]{width:100%;padding:0 12px;height:40px;border-radius:8px;border:1px solid #2a2a2a;background:#111;color:#e8e8e8;font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border .15s}
+input[type=url]:focus,input[type=password]:focus{border-color:#444}
+input[type=range]{width:100%;accent-color:#fff;cursor:pointer}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type=range]{flex:1}
+.slider-val{font-size:14px;font-weight:500;color:#fff;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:5px;background:#1e3a2f;color:#4ade80;margin-left:8px;vertical-align:middle}
+.badge.bad{background:#3a1e1e;color:#f87171}
+.warn{font-size:12px;color:#f87171;margin-top:.5rem;display:none}
+.warn.show{display:block}
+.run-btn{width:100%;height:48px;border-radius:10px;border:none;background:#fff;color:#000;font-size:15px;font-weight:600;cursor:pointer;margin-top:1.5rem;transition:background .15s,transform .1s;font-family:'Inter',sans-serif}
+.run-btn:hover{background:#ddd}
+.run-btn:active{transform:scale(.98)}
+.run-btn:disabled{background:#222;color:#555;cursor:not-allowed}
+
+/* Progress panel */
+#progress-panel{display:none;margin-top:1rem;background:#111;border:1px solid #2a2a2a;border-radius:12px;padding:1.25rem}
+#progress-panel.show{display:block}
+.progress-title{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.status-pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.status-pill.running{background:#1a2e1a;color:#4ade80}
+.status-pill.done{background:#1e3a2f;color:#4ade80}
+.status-pill.error{background:#3a1e1e;color:#f87171}
+.status-pill.pending{background:#2a2a1e;color:#fbbf24}
+.log-box{font-family:'Courier New',monospace;font-size:12px;color:#888;line-height:1.8;max-height:200px;overflow-y:auto;padding-right:4px}
+.log-box .log-line{display:flex;gap:8px}
+.log-box .log-line::before{content:"›";color:#444}
+.log-box .log-line.new{color:#ccc}
+
+/* Downloads */
+#downloads{display:none;margin-top:1rem}
+#downloads.show{display:block}
+.downloads-title{font-size:12px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+.download-item{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:8px;margin-bottom:.5rem}
+.download-item span{font-size:13px;color:#ccc}
+.dl-btn{padding:6px 14px;border-radius:6px;border:1px solid #333;background:transparent;color:#4ade80;font-size:12px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:border-color .15s}
+.dl-btn:hover{border-color:#4ade80}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>✂ Shorts Generator</h1>
+    <p>Auto-clip viral shorts from any YouTube video</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Source</div>
+    <div class="field">
+      <label>YouTube URL</label>
+      <input type="url" id="yt-url" placeholder="https://youtube.com/watch?v=..." />
+    </div>
+    <div class="field">
+      <label>Number of shorts <span class="slider-val" id="num-out">3</span></label>
+      <input type="range" id="num-shorts" min="1" max="10" step="1" value="3" />
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Clip length</div>
+    <div class="two-col">
+      <div class="field">
+        <label>Min <span class="hint">seconds</span></label>
+        <div class="slider-row">
+          <input type="range" id="min-len" min="20" max="55" step="1" value="50" />
+          <span class="slider-val" id="min-out">50s</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Max <span class="hint">seconds</span></label>
+        <div class="slider-row">
+          <input type="range" id="max-len" min="30" max="90" step="1" value="60" />
+          <span class="slider-val" id="max-out">60s</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Scoring weights <span class="badge" id="weight-badge">1.00</span></div>
+    <div class="field">
+      <label>🎙 Audio</label>
+      <div class="slider-row">
+        <input type="range" id="audio-w" min="0" max="1" step="0.05" value="0.3" />
+        <span class="slider-val" id="audio-out">0.30</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>💬 NLP / LLM</label>
+      <div class="slider-row">
+        <input type="range" id="llm-w" min="0" max="1" step="0.05" value="0.5" />
+        <span class="slider-val" id="llm-out">0.50</span>
+      </div>
+    </div>
+    <div class="field">
+      <label>🎬 Scene</label>
+      <div class="slider-row">
+        <input type="range" id="scene-w" min="0" max="1" step="0.05" value="0.2" />
+        <span class="slider-val" id="scene-out">0.20</span>
+      </div>
+    </div>
+    <div class="warn" id="weight-warn">⚠ Weights must sum to 1.0</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Groq API key</div>
+    <div class="field">
+      <label>API key <span class="hint">blank = local NLP fallback</span></label>
+      <input type="password" id="groq-key" placeholder="gsk_..." />
+    </div>
+  </div>
+
+  <button class="run-btn" id="run-btn" onclick="handleRun()">▶ Generate Shorts</button>
+
+  <div id="progress-panel">
+    <div class="progress-title">
+      Pipeline
+      <span class="status-pill pending" id="status-pill">Pending</span>
+    </div>
+    <div class="log-box" id="log-box"></div>
+  </div>
+
+  <div id="downloads">
+    <div class="downloads-title">Your Shorts</div>
+    <div id="download-list"></div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin  // same server
+
+let pollInterval = null
+let currentJobId = null
+
+function s(id){ return document.getElementById(id) }
+
+function sync(inputId, outId, fmt){
+  const el = s(inputId), out = s(outId)
+  el.oninput = () => { out.textContent = fmt(el.value); checkWeights() }
+  out.textContent = fmt(el.value)
+}
+
+sync('num-shorts', 'num-out', v => v)
+sync('min-len', 'min-out', v => v + 's')
+sync('max-len', 'max-out', v => v + 's')
+sync('audio-w', 'audio-out', v => parseFloat(v).toFixed(2))
+sync('llm-w', 'llm-out', v => parseFloat(v).toFixed(2))
+sync('scene-w', 'scene-out', v => parseFloat(v).toFixed(2))
+
+function checkWeights(){
+  const t = parseFloat(s('audio-w').value) + parseFloat(s('llm-w').value) + parseFloat(s('scene-w').value)
+  const ok = Math.abs(t - 1.0) < 0.01
+  const badge = s('weight-badge')
+  badge.textContent = t.toFixed(2)
+  badge.className = ok ? 'badge' : 'badge bad'
+  s('weight-warn').classList.toggle('show', !ok)
+  return ok
+}
+
+checkWeights()
+
+async function handleRun(){
+  const url = s('yt-url').value.trim()
+  if(!url){ alert('Enter a YouTube URL'); return }
+  if(!checkWeights()){ alert('Weights must sum to 1.0'); return }
+  if(parseInt(s('min-len').value) >= parseInt(s('max-len').value)){ alert('Min must be less than max'); return }
+
+  const btn = s('run-btn')
+  btn.disabled = true
+  btn.textContent = 'Starting...'
+
+  s('progress-panel').classList.add('show')
+  s('downloads').classList.remove('show')
+  s('download-list').innerHTML = ''
+  s('log-box').innerHTML = ''
+  setPill('pending')
+
+  const body = {
+    url,
+    num_shorts: parseInt(s('num-shorts').value),
+    min_len: parseInt(s('min-len').value),
+    max_len: parseInt(s('max-len').value),
+    audio_weight: parseFloat(s('audio-w').value),
+    llm_weight: parseFloat(s('llm-w').value),
+    scene_weight: parseFloat(s('scene-w').value),
+    groq_key: s('groq-key').value.trim() || null,
+  }
+
+  try {
+    const res = await fetch(`${API}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    })
+    const data = await res.json()
+    currentJobId = data.job_id
+    startPolling(currentJobId)
+  } catch(e) {
+    alert('Could not reach backend: ' + e.message)
+    btn.disabled = false
+    btn.textContent = '▶ Generate Shorts'
+  }
+}
+
+function startPolling(jobId){
+  clearInterval(pollInterval)
+  pollInterval = setInterval(() => pollStatus(jobId), 2000)
+}
+
+let lastLogCount = 0
+
+async function pollStatus(jobId){
+  try {
+    const res = await fetch(`${API}/status/${jobId}`)
+    const data = await res.json()
+
+    setPill(data.status)
+
+    const logBox = s('log-box')
+    const newLogs = data.logs.slice(lastLogCount)
+    newLogs.forEach(msg => {
+      const line = document.createElement('div')
+      line.className = 'log-line new'
+      line.textContent = msg
+      logBox.appendChild(line)
+      logBox.scrollTop = logBox.scrollHeight
+      setTimeout(() => line.classList.remove('new'), 1000)
+    })
+    lastLogCount = data.logs.length
+
+    if(data.status === 'done'){
+      clearInterval(pollInterval)
+      s('run-btn').disabled = false
+      s('run-btn').textContent = '▶ Generate Shorts'
+      showDownloads(jobId, data.output_files)
+    }
+
+    if(data.status === 'error'){
+      clearInterval(pollInterval)
+      s('run-btn').disabled = false
+      s('run-btn').textContent = '▶ Try Again'
+    }
+  } catch(e) {
+    console.error('Poll error', e)
+  }
+}
+
+function setPill(status){
+  const pill = s('status-pill')
+  pill.className = `status-pill ${status}`
+  pill.textContent = status.charAt(0).toUpperCase() + status.slice(1)
+}
+
+function showDownloads(jobId, files){
+  if(!files.length) return
+  const list = s('download-list')
+  files.forEach(filename => {
+    const item = document.createElement('div')
+    item.className = 'download-item'
+    item.innerHTML = `
+      <span>📹 ${filename}</span>
+      <a class="dl-btn" href="${API}/download/${jobId}/${filename}" download="${filename}">Download</a>
+    `
+    list.appendChild(item)
+  })
+  s('downloads').classList.add('show')
+}
+</script>
+</body>
+</html>
